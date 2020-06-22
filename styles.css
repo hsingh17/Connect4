@@ -5,9 +5,11 @@ html, body {
     background-color: bisque;
 }
 
-#container {
-    background-color: red;
-    display: flex;
-    justify-content: center;
-    margin: auto 40%;    
+#end-screen {
+    background-color: lightblue;
+    position: absolute;
+    display: none;
+    top: 150px;
+    left: 650px;
+    padding-right: 5%;
 }

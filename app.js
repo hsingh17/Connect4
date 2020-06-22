@@ -6,8 +6,8 @@ canvas.width = window.screen.width
 canvas.height = 500
 
 let board = new Board()
-
 board.init_board()
+
 
 setInterval(loop, 100)
 
@@ -38,16 +38,15 @@ function Circle(i, j) {
 }
 
 function Board() {
-    this.m = 6
-    this.n = 7  
-    this.player_turn = 0
-    this.board = []
-    this.last_row = -1
-    this.last_col = -1
-
     this.init_board = function() {
-        this.board = []
+        this.m = 6
+        this.n = 7  
         this.player_turn = 0
+        this.board = []
+        this.last_row = -1
+        this.last_col = -1
+        this.is_winner = false 
+
         for (let i = 1; i <= 6; i++) {
             let row = []
             for (let j = 1; j <= 7; j++) {
@@ -89,8 +88,10 @@ function Board() {
         })
     } 
 
-    this.reset_board = function() {
+    this.reset_board = function() {     
         this.init_board()
+        document.getElementById("end-screen").style.display = "none"
+        console.log("Reset!")
     }
     
 
@@ -119,7 +120,7 @@ function Board() {
 
         if (streak == 4) return true
 
-        // Left diagonal win
+        // Left diagonal win going down and to the left
         streak = 0
         let row = this.last_row
         let col = this.last_col
@@ -130,9 +131,22 @@ function Board() {
             row++
             col--
         }
-
         if (streak == 4) return true
-        // Right diagonal win
+        
+        // Left diagonal win going up and to the right
+        streak = 0
+        row = this.last_row
+        col = this.last_col
+        while (row >= 0 && col < this.n) {
+            if (streak == 4) return true
+            if (this.board[row][col].color == prev_player) streak++
+            else streak = 0
+            row--
+            col++
+        }
+        if (streak == 4) return true
+
+        // Right diagonal win going down and to the right
         streak = 0
         row = this.last_row
         col = this.last_col
@@ -143,6 +157,20 @@ function Board() {
             row++
             col++
         }
+        
+        if (streak == 4) return true
+
+        // Right diagonal win going up and to the left
+        streak = 0
+        row = this.last_row
+        col = this.last_col
+        while (row >= 0 && col >= 0) {
+            if (streak == 4) return true
+            if (this.board[row][col].color == prev_player) streak++
+            else streak = 0
+            row--
+            col--
+        }
 
         if (streak == 4) return true
 
@@ -151,13 +179,16 @@ function Board() {
 }
 
 function loop() {
+    if (board.is_winner) return
     // Draw the circles to the screen
     board.draw()
     let win = board.check_win()
     if (win) {
-        console.log("winner!")
+        board.is_winner = true
         board.draw()
+        let end_screen = document.getElementById("end-screen")
         let winner = document.getElementById("winner")
+        end_screen.style.display = "block"
         winner.textContent =  board.player_turn == 1 ? "Blue wins" : "Yellow wins"
     }
 }
@@ -171,7 +202,5 @@ canvas.addEventListener('click', (e) => {
 canvas.addEventListener('keydown', (e) => {
     if (e.keyCode == 82) {
         board.reset_board()
-        document.getElementById("winner").textContent = "No one has won"
-        console.log("Reset!")
     }
 })

@@ -8,8 +8,11 @@
   <body>
       <canvas id="canvas" tabindex="1"></canvas>
       <script src="app.js"></script>
-      <div id="container">
-        <p id="winner">No one has won</p>
+      <div id="end-screen">
+        <ul style="list-style:none">
+          <li><p id="winner">Test</p></li>
+          <li><button id="restart" onclick="board.reset_board()"> Restart</button></li>
+        </ul>
       </div>
   </body>
 
