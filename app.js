@@ -3,10 +3,10 @@ let canvas = document.getElementById('canvas')
 let ctx = canvas.getContext('2d')
 
 canvas.width = window.screen.width
-canvas.height = window.screen.height
+canvas.height = 500
 
-let turn = 0
 let board = new Board()
+
 board.init_board()
 
 setInterval(loop, 100)
@@ -137,13 +137,16 @@ function Board() {
         row = this.last_row
         col = this.last_col
         while (row < this.m && col < this.n) {
-            console.log(streak, row, col, this.board[row][this.last_col].color, prev_player)
             if (streak == 4) return true
             if (this.board[row][col].color == prev_player) streak++
             else streak = 0
             row++
             col++
         }
+
+        if (streak == 4) return true
+
+        return false
     }
 }
 
@@ -151,6 +154,12 @@ function loop() {
     // Draw the circles to the screen
     board.draw()
     let win = board.check_win()
+    if (win) {
+        console.log("winner!")
+        board.draw()
+        let winner = document.getElementById("winner")
+        winner.textContent =  board.player_turn == 1 ? "Blue wins" : "Yellow wins"
+    }
 }
 
 // event handler on canvas to check for clicks on page
@@ -162,6 +171,7 @@ canvas.addEventListener('click', (e) => {
 canvas.addEventListener('keydown', (e) => {
     if (e.keyCode == 82) {
         board.reset_board()
+        document.getElementById("winner").textContent = "No one has won"
         console.log("Reset!")
     }
 })

@@ -5,6 +5,9 @@ html, body {
     background-color: bisque;
 }
 
-/* canvas {
-    padding-left: 30%;
-} */
+#container {
+    background-color: red;
+    display: flex;
+    justify-content: center;
+    margin: auto 40%;    
+}
