@@ -6,10 +6,47 @@ html, body {
 }
 
 #end-screen {
-    background-color: lightblue;
+    background-color: #f5edfa;
     position: absolute;
     display: none;
-    top: 150px;
-    left: 650px;
-    padding-right: 5%;
+    top: 147px;
+    left: 655px;
+    width: 150px;
+    height: 210px;
+    border-radius: 10%;
+    padding: 10px 10px;
+    align-items: center;
+    justify-content: center;
+    border: solid black 2px;
+}
+
+ul {
+    padding: 0px;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+li {
+    margin: 0px 0px;
+    padding: 0px 0px;
+    font-family: 'Teko', sans-serif;
+}
+
+#winner-1 {
+    font-size: 60px;
+}
+
+#winner-2 {
+    font-size: 60px;
+}
+
+#restart {
+    padding: 10px 10px;
+    font-size: 15px;
+    margin: 0;
+    font-family: 'Teko', sans-serif;
+
 }

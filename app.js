@@ -2,7 +2,7 @@
 function Circle(i, j) {
     this.col = j-1
     this.x = (j * 60) + 500
-    this.y  = i * 60
+    this.y  = (i * 60) + 50
     this.r = canvas.width / 56
     this.start_angle = 0;
     this.end_angle = 2 * Math.PI
@@ -20,7 +20,10 @@ function Circle(i, j) {
     }
 
     // Check if the client's mouse is in a valid position to drop a piece
+    // If the circle is already occupied then automatically return false
     this.check_hit = function(x, y) {
+        if (this.color != "#FFFFFF") return false
+
         let dist = Math.sqrt((this.x-x) ** 2 + (this.y-y) ** 2)
         if (dist < this.r) return true
         else return false
@@ -40,7 +43,7 @@ function Board() {
         this.board = []
         this.last_row = -1
         this.last_col = -1
-        this.is_winner = false 
+        this.finished = false 
 
         // Create the internal representation of the board
         // using a 2D-array
@@ -127,7 +130,6 @@ function Board() {
         for (let col = 0; col < this.n; col++) {
             let streak = 0, row = this.m-1, j = col
             while (j < this.n && row >= 0) {
-                console.log(row)
                 streak = this.board[row][j].color == prev_player ? ++streak : 0
                 if (streak == 4) return true
                 j++
@@ -135,6 +137,19 @@ function Board() {
             }
         }
         return false
+    }
+
+    this.check_tie = function() {
+        // We only check the top most row of the board (
+        // 0th row in our representation of the board) to see if there any
+        // playable spots left (aka white circles).
+        // We only check the topmost row since tie games will only occur when
+        // pieces start getting to the top
+        for (let i = 0; i < this.n; i++) {
+            if (this.board[0][i].color == "#FFFFFF") return false
+        }
+
+        return true
     }
 
     // Resets the board to initial state. Used when restarting game
@@ -158,19 +173,29 @@ setInterval(loop, 100)
 
 function loop() {
     // If there is a winner, do not update the board
-    if (board.is_winner) return
+    if (board.finished) return
     
     // Draw the circles to the screen
     board.draw()
 
-    // If there is a winner, draw the final board to the screen
+    // If there is a winner or tie game, draw the final board to the screen
     // and show the results screen
-    if (board.check_win()) {
-        board.is_winner = true
+    let win = board.check_win()
+    let tie = board.check_tie()
+    if (win || tie) {
+        board.finished = true
         board.draw()
         document.getElementById("end-screen").style.display = "block"
-        document.getElementById("winner").textContent =  board.player_turn == 1 ? "Blue wins" : "Yellow wins"
-    }
+        let winner_text = document.getElementById("winner-1")
+        if (win) {
+            winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow"
+            winner_text.style.color = board.player_turn == 1 ? "blue" : "gold   "
+        } else {
+            winner_text.textContent = "Tie"
+            document.getElementById("winner-2").style.display = "none"
+        }
+        
+    } 
 }
 
 // event handler on canvas to check for clicks on page
@@ -183,5 +208,11 @@ canvas.addEventListener('click', (e) => {
 canvas.addEventListener('keydown', (e) => {
     if (e.keyCode == 82) {
         board.reset_board()
+    }
+})
+
+canvas.addEventListener('keydown', (e) => {
+    if (e.keyCode == 72) {
+        document.getElementById("end-screen").style.display = "none"
     }
 })
