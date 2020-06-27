@@ -1,9 +1,9 @@
 // Function to represent a circle/pieceon the board
 function Circle(i, j) {
     this.col = j-1
-    this.x = (j * 60) + 500
-    this.y  = (i * 60) + 50
-    this.r = canvas.width / 56
+    this.x = ((j * 60) + 500) 
+    this.y  = ((i * 60) + 50) 
+    this.r = canvas.width / (60 * dpi)
     this.start_angle = 0;
     this.end_angle = 2 * Math.PI
     this.color = "#FFFFFF"
@@ -15,8 +15,8 @@ function Circle(i, j) {
         ctx.arc(this.x, this.y, this.r, this.start_angle, this.end_angle)
         ctx.lineWidth = 2;
         ctx.fill()
-        ctx.closePath()
         ctx.stroke()
+        ctx.closePath()
     }
 
     // Check if the client's mouse is in a valid position to drop a piece
@@ -58,6 +58,7 @@ function Board() {
 
     // Draws board to screen
     this.draw = function() {
+        // Draw circles to screen
         this.board.forEach((row) => {
             row.forEach((circle) => {
                 circle.draw()
@@ -115,7 +116,7 @@ function Board() {
             if (streak == 4) return true
         }
 
-        // Diagonal win that occurs on the left half of the board
+        // Diagonal win that goes from left to right (checking from 3rd row to 6th row from 0th col)
         for (let row = 3; row < this.m; row++) {
             let streak = 0, col = 0, i = row
             while (i >= 0) {
@@ -126,7 +127,7 @@ function Board() {
             }
         }
         
-        // Diagonal win that occurs on the right half of the board
+        // Diagonal win that goes from left to right (checking from 1st col to 7th col from bottom row)
         for (let col = 0; col < this.n; col++) {
             let streak = 0, row = this.m-1, j = col
             while (j < this.n && row >= 0) {
@@ -136,6 +137,29 @@ function Board() {
                 row--
             }
         }
+
+        // Diagonal win that goes from right to left (checking from 3rd row to 6th row from 6th col)
+        for (let row = 3; row < this.m; row++) {
+            let streak = 0, col = this.n-1, i = row
+            while (i >= 0) {
+                streak = this.board[i][col].color == prev_player ? ++streak : 0
+                if (streak == 4) return true
+                i--
+                col--
+            }
+        }
+
+        // Diagonal win that goes from right to left (checking 7th col to 1st col from bottom row)
+        for (let col = this.n-1; col >= 0; col--) {
+            let streak = 0, row = this.m-1, j = col
+            while (j >= 0 && row >= 0) {
+                streak = this.board[row][j].color == prev_player ? ++streak : 0
+                if (streak == 4) return true
+                j--
+                row--
+            }
+        }
+
         return false
     }
 
@@ -156,20 +180,9 @@ function Board() {
     this.reset_board = function() {     
         this.init_board()
         document.getElementById("end-screen").style.display = "none"
+        document.getElementById("blur").style.display = "none"
     }
 }
-
-let canvas = document.getElementById('canvas')
-/** @type {CanvasRenderingContext2D} */
-let ctx = canvas.getContext('2d')
-
-canvas.width = window.screen.width
-canvas.height = 500
-
-let board = new Board()
-board.init_board()
-setInterval(loop, 100)
-
 
 function loop() {
     // If there is a winner, do not update the board
@@ -186,6 +199,7 @@ function loop() {
         board.finished = true
         board.draw()
         document.getElementById("end-screen").style.display = "block"
+        document.getElementById("blur").style.display = "block"
         let winner_text = document.getElementById("winner-1")
         if (win) {
             winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow"
@@ -194,9 +208,24 @@ function loop() {
             winner_text.textContent = "Tie"
             document.getElementById("winner-2").style.display = "none"
         }
-        
     } 
 }
+
+// Eventually I will move this to its own function when window is loaded
+let canvas = document.getElementById('canvas')
+/** @type {CanvasRenderingContext2D} */
+let ctx = canvas.getContext('2d')
+let dpi = window.devicePixelRatio
+
+canvas.width = window.innerWidth * dpi
+canvas.height = window.innerHeight * dpi
+canvas.style.width = "" + (window.innerWidth) + "px"
+canvas.style.height = "" + (window.innerHeight) + "px"
+ctx.scale(dpi,dpi)
+
+let board = new Board()
+board.init_board()
+setInterval(loop, 100)
 
 // event handler on canvas to check for clicks on page
 canvas.addEventListener('click', (e) => {
@@ -211,6 +240,7 @@ canvas.addEventListener('keydown', (e) => {
     }
 })
 
+// Hide post game screen
 canvas.addEventListener('keydown', (e) => {
     if (e.keyCode == 72) {
         document.getElementById("end-screen").style.display = "none"

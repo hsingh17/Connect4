@@ -2,7 +2,6 @@ html, body {
     margin: 0;
     overflow: hidden;
     padding: 0;
-    background-color: bisque;
 }
 
 #end-screen {
@@ -13,11 +12,15 @@ html, body {
     left: 655px;
     width: 150px;
     height: 210px;
-    border-radius: 10%;
     padding: 10px 10px;
     align-items: center;
     justify-content: center;
     border: solid black 2px;
+    z-index: 99;
+}
+
+canvas {
+    outline: none;
 }
 
 ul {
@@ -48,5 +51,37 @@ li {
     font-size: 15px;
     margin: 0;
     font-family: 'Teko', sans-serif;
+}
 
+#blue-box {
+    z-index: -2;
+    position: absolute;
+    background-color: #5D64EEFF;
+    height: 420px;
+    width: 500px;
+    top: 50px;
+    left: 490px;
+    border-radius: 10%;
+}
+
+#light-blue-box {
+    z-index: -1;
+    position: absolute;
+    background-color: #7379fa;
+    top: 70px;
+    left: 515px;
+    height: 380px;
+    width: 450px;
+    border-radius: 10%;
+}
+
+#blur {
+    display: none;
+    position: absolute;
+    height: 500px;
+    width: 600px;
+    top: 30px;
+    left: 460px;
+    z-index: 10;
+    backdrop-filter: blur(2px); 
 }

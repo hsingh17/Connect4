@@ -7,15 +7,19 @@
     <title>Connect 4</title>
   </head>
   <body>
-      <canvas id="canvas" tabindex="1"></canvas>
-      <script src="app.js"></script>
-      <div id="end-screen">
-        <ul style="list-style:none">
-          <li id="winner-1">Blue</li>
-          <li id="winner-2">Wins</li>
-          <li><button id="restart" onclick="board.reset_board()"> Restart</button></li>
-        </ul>
-      </div>
+    <div id="blur"></div>
+    <canvas id="canvas" tabindex="1"></canvas>
+    <div id="blue-box"></div>
+    <div id="light-blue-box"></div>
+    <div id="end-screen">
+      <ul style="list-style:none">
+        <li id="winner-1"></li>
+        <li id="winner-2"></li>
+        <li><button id="restart" onclick="board.reset_board()"> Restart</button></li>
+      </ul>
+    </div>
+    
+    <script src="app.js"></script>
   </body>
 
 </html>
