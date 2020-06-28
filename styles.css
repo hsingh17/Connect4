@@ -1,4 +1,6 @@
-html, body {
+body {
+    display: flex;
+    justify-content: center;
     margin: 0;
     overflow: hidden;
     padding: 0;
@@ -67,7 +69,7 @@ li {
 #light-blue-box {
     z-index: -1;
     position: absolute;
-    background-color: #7379fa;
+    background-color: #7379FA;
     top: 70px;
     left: 515px;
     height: 380px;
@@ -84,4 +86,33 @@ li {
     left: 460px;
     z-index: 10;
     backdrop-filter: blur(2px); 
+}
+
+#game {
+    display: none;
+}
+
+#menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 100px;
+    width: 250px;
+    height: auto;
+    background-color: #5D64EEFF;
+    padding-bottom: 50px;
+    border-radius: 10%;
+}
+
+#menu p {
+    margin: 0;
+    font-size: 50px;
+    font-family: 'Teko', sans-serif;
+}
+
+#menu button {
+    margin-top: 25px;
+    padding: 10px 10px;
+    width: 200px;
 }

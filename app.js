@@ -3,13 +3,15 @@ function Circle(i, j) {
     this.col = j-1
     this.x = ((j * 60) + 500) 
     this.y  = ((i * 60) + 50) 
-    this.r = canvas.width / (60 * dpi)
+    this.r = canvas.width / (60 * window.devicePixelRatio)
     this.start_angle = 0;
     this.end_angle = 2 * Math.PI
     this.color = "#FFFFFF"
 
     // Draws circle to the screen
     this.draw = function() {
+        let canvas = document.getElementById("canvas")
+        let ctx = canvas.getContext('2d')
         ctx.beginPath()
         ctx.fillStyle = this.color
         ctx.arc(this.x, this.y, this.r, this.start_angle, this.end_angle)
@@ -159,8 +161,6 @@ function Board() {
                 row--
             }
         }
-
-        return false
     }
 
     this.check_tie = function() {
@@ -184,65 +184,70 @@ function Board() {
     }
 }
 
-function loop() {
-    // If there is a winner, do not update the board
-    if (board.finished) return
-    
-    // Draw the circles to the screen
-    board.draw()
+function start_game() {
+    var canvas = document.getElementById('canvas')
+    /** @type {CanvasRenderingContext2D} */
+    var ctx = canvas.getContext('2d')
+    var dpi = window.devicePixelRatio
 
-    // If there is a winner or tie game, draw the final board to the screen
-    // and show the results screen
-    let win = board.check_win()
-    let tie = board.check_tie()
-    if (win || tie) {
-        board.finished = true
+    document.getElementById("game").style.display = "block"
+    document.getElementById("menu").style.display = "none"
+
+    canvas.width = window.innerWidth * dpi
+    canvas.height = window.innerHeight * dpi
+    canvas.style.width = "" + (window.innerWidth) + "px"
+    canvas.style.height = "" + (window.innerHeight) + "px"
+    ctx.scale(dpi,dpi)
+
+    let board = new Board()
+    board.init_board()
+    setInterval(loop, 100)
+
+    function loop() {
+        // If there is a winner, do not update the board
+        if (board.finished) return
+        
+        // Draw the circles to the screen
         board.draw()
-        document.getElementById("end-screen").style.display = "block"
-        document.getElementById("blur").style.display = "block"
-        let winner_text = document.getElementById("winner-1")
-        if (win) {
-            winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow"
-            winner_text.style.color = board.player_turn == 1 ? "blue" : "gold   "
-        } else {
-            winner_text.textContent = "Tie"
-            document.getElementById("winner-2").style.display = "none"
+    
+        // If there is a winner or tie game, draw the final board to the screen
+        // and show the results screen
+        let win = board.check_win()
+        let tie = board.check_tie()
+        if (win || tie) {
+            board.finished = true
+            board.draw()
+            document.getElementById("end-screen").style.display = "block"
+            document.getElementById("blur").style.display = "block"
+            let winner_text = document.getElementById("winner-1")
+            if (win) {
+                winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow"
+                winner_text.style.color = board.player_turn == 1 ? "blue" : "gold   "
+            } else {
+                winner_text.textContent = "Tie"
+                document.getElementById("winner-2").style.display = "none"
+            }
+        } 
+    }
+
+    // event handler on canvas to check for clicks on page
+    canvas.addEventListener('click', (e) => {
+        // Place a piece on the board if it is valid
+        board.place(e.clientX, e.clientY)
+    })
+
+    // Manual reset for debugging *REMOVE*
+    canvas.addEventListener('keydown', (e) => {
+        if (e.keyCode == 82) {
+            board.reset_board()
         }
-    } 
+    })
+
+    // Hide post game screen
+    canvas.addEventListener('keydown', (e) => {
+        if (e.keyCode == 72) {
+            document.getElementById("end-screen").style.display = "none"
+        }
+    })
 }
 
-// Eventually I will move this to its own function when window is loaded
-let canvas = document.getElementById('canvas')
-/** @type {CanvasRenderingContext2D} */
-let ctx = canvas.getContext('2d')
-let dpi = window.devicePixelRatio
-
-canvas.width = window.innerWidth * dpi
-canvas.height = window.innerHeight * dpi
-canvas.style.width = "" + (window.innerWidth) + "px"
-canvas.style.height = "" + (window.innerHeight) + "px"
-ctx.scale(dpi,dpi)
-
-let board = new Board()
-board.init_board()
-setInterval(loop, 100)
-
-// event handler on canvas to check for clicks on page
-canvas.addEventListener('click', (e) => {
-    // Place a piece on the board if it is valid
-    board.place(e.clientX, e.clientY)
-})
-
-// Manual reset for debugging *REMOVE*
-canvas.addEventListener('keydown', (e) => {
-    if (e.keyCode == 82) {
-        board.reset_board()
-    }
-})
-
-// Hide post game screen
-canvas.addEventListener('keydown', (e) => {
-    if (e.keyCode == 72) {
-        document.getElementById("end-screen").style.display = "none"
-    }
-})
