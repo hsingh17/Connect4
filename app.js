@@ -184,6 +184,31 @@ function Board() {
     }
 }
 
+function AI() {
+    this.look_ahead = 5
+    // Top level function for AI making a move.
+    // Returns the column that the AI will drop in
+    this.make_move = function() {
+        // Function to simulate minimax algorithm. 
+        // Takes in as arguments the current board, the current player, and K (the depth of search)
+        // Return {column_to_play, heuristic_value_of_move}
+        function minimax(board, cur_player, k) {
+            
+        }
+
+    }
+    
+    // Function that returns the heuristic value of the arugment board
+    this.static_board_eval(board) = function() {
+
+    }
+
+    // Function that generates all moves that can be made from where board currently is
+    this.move_gen(board, player) = function() {
+
+    }
+}
+
 function start_game() {
     var canvas = document.getElementById('canvas')
     /** @type {CanvasRenderingContext2D} */
@@ -203,7 +228,7 @@ function start_game() {
     board.init_board()
     setInterval(loop, 100)
 
-    function loop() {
+    function loop(game_mode) {
         // If there is a winner, do not update the board
         if (board.finished) return
         
@@ -217,8 +242,19 @@ function start_game() {
         if (win || tie) {
             board.finished = true
             board.draw()
+            
+            // Display the end screen and blur the background
             document.getElementById("end-screen").style.display = "block"
             document.getElementById("blur").style.display = "block"
+            
+            // Set onclick event of restart button to resetting the board
+            // TODO: Possibly find a fix for this.
+            let restart_button = document.getElementById("restart")
+            restart_button.onclick = function() {
+                board.reset_board()
+            }
+
+            // Display at the top who won or if it was a tie
             let winner_text = document.getElementById("winner-1")
             if (win) {
                 winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow"
@@ -227,6 +263,7 @@ function start_game() {
                 winner_text.textContent = "Tie"
                 document.getElementById("winner-2").style.display = "none"
             }
+            
         } 
     }
 
