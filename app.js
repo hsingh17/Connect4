@@ -77,10 +77,14 @@ function Board() {
             if (this.board[i][col].color != "#FFFFFF") break
         }
 
+        if (i == 0) return false
+
         // Update the color of the circle where the piece is being dropped
         if (i != 0) this.board[i-1][col].color = this.player_turn == 0 ? "#5DEED6" : "#FFC300"
         this.last_row = i-1
         this.last_col = col
+        this.player_turn ^= 1
+        return true
     }
 
     // Takes in as args the x,y positions of the client's mouse 
@@ -89,10 +93,7 @@ function Board() {
     this.place = function(x, y) {
         this.board.forEach((row) => {
             row.forEach((circle) => {
-                if (circle.check_hit(x, y)) { 
-                    this.update_board(circle.col)
-                    this.player_turn ^= 1
-                }
+                if (circle.check_hit(x, y)) this.update_board(circle.col)
             })
         })
     }     
@@ -186,26 +187,37 @@ function Board() {
 
 function AI() {
     this.look_ahead = 5
+    this.piece_color = "#FFC300"
     // Top level function for AI making a move.
     // Returns the column that the AI will drop in
     this.make_move = function() {
         // Function to simulate minimax algorithm. 
         // Takes in as arguments the current board, the current player, and K (the depth of search)
-        // Return {column_to_play, heuristic_value_of_move}
-        function minimax(board, cur_player, k) {
-            
+        // Return {board, heuristic_value_of_move}
+        function minimax(board, k) {
+            if (!k) return [board, this.static_board_eval(board)]
+
+            moves = this.move_gen(board)
+            moves.forEach((move) => {
+
+            })
         }
 
     }
     
     // Function that returns the heuristic value of the arugment board
-    this.static_board_eval(board) = function() {
-
+    this.static_board_eval = function(board) {
+        return true
     }
 
     // Function that generates all moves that can be made from where board currently is
-    this.move_gen(board, player) = function() {
-
+    this.move_gen = function(board) {
+        moves = []
+        for (let i = 0; i < board.n; i++) {
+            move = _.cloneDeep(board)
+            if (move.update_board(i)) moves.push(move)
+        }
+        return moves
     }
 }
 
@@ -225,6 +237,7 @@ function start_game() {
     ctx.scale(dpi,dpi)
 
     let board = new Board()
+    let ai = new AI()
     board.init_board()
     setInterval(loop, 100)
 
@@ -234,7 +247,6 @@ function start_game() {
         
         // Draw the circles to the screen
         board.draw()
-    
         // If there is a winner or tie game, draw the final board to the screen
         // and show the results screen
         let win = board.check_win()
