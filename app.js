@@ -80,7 +80,7 @@ function Board() {
         if (i == 0) return false;
 
         // Update the color of the circle where the piece is being dropped
-        if (i != 0) this.board[i-1][col].color = this.player_turn == 0 ? "#5DEED6" : "#FFC300";
+        if (i != 0) this.board[i-1][col].color = !this.player_turn ? "#5DEED6" : "#FFC300";
         this.last_row = i-1;
         this.last_col = col;
         this.player_turn ^= 1;
@@ -184,60 +184,118 @@ function Board() {
     }
 }
 
-function AI(player) {
-    this.LOOK_AHEAD = 2;
-    this.player = player;
-    console.log(this.player);
-    // Function to simulate minimax algorithm. 
-    // Takes in as arguments the current board, the current player, and K (the depth of search)
-    // Return {board, col_played, heuristic_value_of_move}
-    this.minimax = function (board, col_last_played, k=this.LOOK_AHEAD) {
-        if (!k) return [board, col_last_played, this.static_board_eval(board)];
+// function AI(player) {
+//     this.LOOK_AHEAD = 2;
+//     this.player = player;
+//     // Function to simulate minimax algorithm. 
+//     // Takes in as arguments the current board, the current player, and K (the depth of search)
+//     // Return {board, col_played, heuristic_value_of_move}
+//     this.minimax = function (board, col_last_played, k=this.LOOK_AHEAD) {
+//         if (!k) return [board, col_last_played, this.static_board_eval(board)];
 
-        let moves = this.move_gen(board);
-        let best_move = null;
-        let best_move_col = -1;
-        let best_move_h = (board.player_turn == player) ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
-        moves.forEach((move) => {
-            let ret = this.minimax(move[0], move[1], k-1);
-            if ((board.player_turn == this.player && Math.max(best_move_h, ret[2] == ret[2])) ||
-                (board.player_turn != this.player && Math.min(best_move_h, ret[2]) == ret[2])) {
-                [best_move, best_move_col, best_move_h] = [move[0], move[1], ret[2]];
-            } 
-        })
-        return [best_move, best_move_col, best_move_h];
-    }
+//         let moves = this.move_gen(board);
+//         let best_move = null;
+//         let best_move_col = -1;
+//         let best_move_h = (board.player_turn == player) ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+//         moves.forEach((move) => {
+//             let ret = this.minimax(move[0], move[1], k-1);
+//             if ((board.player_turn == this.player && Math.max(best_move_h, ret[2] == ret[2])) ||
+//                 (board.player_turn != this.player && Math.min(best_move_h, ret[2]) == ret[2])) {
+//                 [best_move, best_move_col, best_move_h] = [move[0], move[1], ret[2]];
+//             } 
+//         })
+//         return [best_move, best_move_col, best_move_h];
+//     }
     
-    // Function that returns the heuristic value of the arugment board
-    this.static_board_eval = function(board) {
-        let win = board.check_win();
-        let tie = board.check_tie();
-        let is_AI = this.player == board.player_turn;
-        
-        if (win && !is_AI) return Math.NEGATIVE_INFINITY;
-        if (win && is_AI) return Math.POSITIVE_INFINITY;
-        if (tie) return 0;
+//     // Function that returns the heuristic value of the arugment board
+//     this.static_board_eval = function(board) {
+//         function streaks(board, player) {
+//             let player_color = !player ? "#5DEED6" : "#FFC300";
+//             let enemy_color = !player ? "#FFC300" : "#5DEED6";
+//             let streaks = new Map(), blocks = new Map();
+//             // Set initial entries in maps
+//             for (let i = 1; i <= 3; i++) {
+//                 streaks.set(i, 0);
+//                 blocks.set(i, 0);
+//             }
 
-        let heur = Math.random() * 10;
-        return (this.player == board.player_turn) ? heur : heur * -1;
+//             // Horizontal streaks 
+//             // TODO: replace with for each loop so it looks nicer
+//             for (let i  = 0; i < board.m; i++) {
+//                 for (let j = 0, streak = 0; j < board.n; j++) {
+//                     streak = board.board[i][j].color == player_color ? ++streak : streak;
+//                     if ((board.board[i][j].color != player_color && streak > 0) || (j == board.n-1 && streak > 0)) {
+//                         // Check if this streak is an actual playable streak and not being blocked in by enemy pieces
+//                         if (!(j-streak-1 < 0 && board.board[i][j].color == enemy_color) && 
+//                         !(board.board[i][j].color == enemy_color && board.board[i][j-streak-1].color == enemy_color)) {
+//                             streaks.set(streak, streaks.get(streak) + 1);
+//                         }
+//                         streak = 0;
+//                     }
+//                 } 
+//             }
+
+//             console.log(streaks, player_color);
+
+//             // Vertical streaks
+//         }
+        
+//         let win = board.check_win();
+//         let tie = board.check_tie();
+//         let is_AI = this.player == board.player_turn;
+        
+//         if (win && !is_AI) return Math.NEGATIVE_INFINITY;
+//         if (win && is_AI) return Math.POSITIVE_INFINITY;
+//         if (tie) return 0;
+//         streaks(board, board.player_turn ^ 1);
+
+//     }
+
+//     // Function that generates all moves that can be made from where board currently is
+//     this.move_gen = function(board) {
+//         moves = [];
+//         for (let i = 0; i < board.n; i++) {
+//             move = [_.clone(board), i];
+//             if (move[0].update_board(i)) moves.push(move);
+//         }
+//         return moves;
+//     }
+// }
+
+function ViewHandler() {
+    this.rectangles = [];
+    this.init = function() {
+        let ctx = document.getElementById('canvas').getContext('2d');
+        let r = canvas.width / (60 * window.devicePixelRatio);
+        let x = 560-r, y = 110-r, w = 2*r, h = 12*r + 50;
+        for (let i = 0; i < 7; i++) {
+            ctx.beginPath();
+            let x_i = x + i * (w + 9);
+            ctx.rect(x_i, y, w, h);
+            ctx.fillStyle = "#FF0000";
+            ctx.stroke();
+            this.rectangles.push([x_i, y, w, h]);
+        }
+        console.log(this.rectangles);
     }
 
-    // Function that generates all moves that can be made from where board currently is
-    this.move_gen = function(board) {
-        moves = [];
-        for (let i = 0; i < board.n; i++) {
-            move = [_.cloneDeep(board), i];
-            if (move[0].update_board(i)) moves.push(move);
-        }
-        return moves;
+    this.check_click = function(user_x, user_y) {
+        let i = 0;
+        this.rectangles.forEach(rectangle => {
+            let x = rectangle[0], y = rectangle[1], w = rectangle[2], h = rectangle[3];
+            if ((x+w) >= user_x && user_x >= x && (y+h) >= user_y && user_y >= y) {
+                console.log('hit rectangle:', i);
+            }
+            i++;
+        })
     }
 }
 
 function start_game(game_mode) {
-    var canvas = document.getElementById('canvas');
+    let canvas = document.getElementById('canvas');
     /** @type {CanvasRenderingContext2D} */
-    var ctx = canvas.getContext('2d');
-    var dpi = window.devicePixelRatio;
+    let ctx = canvas.getContext('2d');
+    let dpi = window.devicePixelRatio;
 
     document.getElementById("game").style.display = "block";
     document.getElementById("menu").style.display = "none";
@@ -247,11 +305,13 @@ function start_game(game_mode) {
     canvas.style.width = "" + (window.innerWidth) + "px";
     canvas.style.height = "" + (window.innerHeight) + "px";
     ctx.scale(dpi,dpi);
-
+    
     let board = new Board();
-    let ai = null;
+    // let ai = new AI(1);
+    let view = new ViewHandler();
     board.init_board();
-    if (game_mode == 1) ai = new AI(1);
+    // if (game_mode == 1) ai = new AI(1);
+    view.init();
 
     setInterval(loop, 100);
 
@@ -259,11 +319,12 @@ function start_game(game_mode) {
         // If there is a winner, do not update the board
         if (board.finished) return;
         
-        if (game_mode == 1 && board.player_turn == ai.player) {
-            let ai_col = ai.minimax(board, -1)[1];
-            console.log(ai_col);
-            board.update_board(ai_col);
-        }
+        // ai.static_board_eval(board);
+        // if (game_mode == 1 && board.player_turn == ai.player) {
+        //     let ai_col = ai.minimax(board, -1)[1];
+        //     console.log(ai_col);
+        //     board.update_board(ai_col);
+        // }
 
         // Draw the circles to the screen
         board.draw();
@@ -303,6 +364,7 @@ function start_game(game_mode) {
     canvas.addEventListener('click', (e) => {
         // Place a piece on the board if it is valid
         board.place(e.clientX, e.clientY);
+        view.check_click(e.clientX, e.clientY);
     })
 
     // Manual reset for debugging *REMOVE*
