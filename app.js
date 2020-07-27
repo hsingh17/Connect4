@@ -1,37 +1,3 @@
-// Function to represent a circle/pieceon the board
-function Circle(i, j) {
-    this.col = j-1;
-    this.x = ((j * 60) + 500);
-    this.y  = ((i * 60) + 50); 
-    this.r = canvas.width / (60 * window.devicePixelRatio);
-    this.start_angle = 0;
-    this.end_angle = 2 * Math.PI;
-    this.color = "#FFFFFF";
-
-    // Draws circle to the screen
-    this.draw = function() {
-        let canvas = document.getElementById("canvas");
-        let ctx = canvas.getContext('2d');
-        ctx.beginPath();
-        ctx.fillStyle = this.color;
-        ctx.arc(this.x, this.y, this.r, this.start_angle, this.end_angle);
-        ctx.lineWidth = 2;
-        ctx.fill();
-        ctx.stroke();
-        ctx.closePath();
-    }
-
-    // Check if the client's mouse is in a valid position to drop a piece
-    // If the circle is already occupied then automatically return false
-    this.check_hit = function(x, y) {
-        if (this.color != "#FFFFFF") return false;
-
-        let dist = Math.sqrt((this.x-x) ** 2 + (this.y-y) ** 2);
-        if (dist < this.r) return true;
-        else return false;
-    }
-}
-
 // Function to represent the board
 function Board() {
     this.init_board = function() {
@@ -49,54 +15,30 @@ function Board() {
 
         // Create the internal representation of the board
         // using a 2D-array
-        for (let i = 1; i <= 6; i++) {
-            let row = [];
-            for (let j = 1; j <= 7; j++) {
-                row.push(new Circle(i, j));
-            }
+        for (let i = 0; i < 6; i++) {
+            let row = ["#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF"];
             this.board.push(row);
         }
     }
 
-    // Draws board to screen
-    this.draw = function() {
-        // Draw circles to screen
-        this.board.forEach((row) => {
-            row.forEach((circle) => {
-                circle.draw();
-            })
-        })
-    }
-
     // Takes in as argument the column that the player wants to drop a piece into
     // and updates the internal representation of the board 
-    this.update_board = function(col) {
+    this.place = function(col) {
         // Iterate over all the rows of the column until we reach the bottom OR
         // until we reach the furthest possible place the piece can go down in this column
         for (var i = 0; i < this.board.length; i++) {
-            if (this.board[i][col].color != "#FFFFFF") break;
+            if (this.board[i][col] != "#FFFFFF") break;
         }
 
         if (i == 0) return false;
 
         // Update the color of the circle where the piece is being dropped
-        if (i != 0) this.board[i-1][col].color = !this.player_turn ? "#5DEED6" : "#FFC300";
+        if (i != 0) this.board[i-1][col] = !this.player_turn ? "#5DEED6" : "#FFC300";
         this.last_row = i-1;
         this.last_col = col;
         this.player_turn ^= 1;
         return true;
     }
-
-    // Takes in as args the x,y positions of the client's mouse 
-    // and checks if any of the circles have been hit. If they have
-    // drop a piece in that column 
-    this.place = function(x, y) {
-        this.board.forEach((row) => {
-            row.forEach((circle) => {
-                if (circle.check_hit(x, y)) this.update_board(circle.col);
-            })
-        })
-    }     
 
     // Checks if the player whos current playing has won
     this.check_win = function() {
@@ -109,13 +51,13 @@ function Board() {
 
         // Horizontal win
         for (let col = 0, streak = 0; col < this.n; col++) {
-            streak = this.board[this.last_row][col].color == prev_player ? ++streak : 0;
+            streak = this.board[this.last_row][col] == prev_player ? ++streak : 0;
             if (streak == 4) return true;
         }
             
         // Vertical win
         for (let row = this.m-1, streak = 0; row >= 0; row--) {
-            streak = this.board[row][this.last_col].color == prev_player ? ++streak : 0;
+            streak = this.board[row][this.last_col] == prev_player ? ++streak : 0;
             if (streak == 4) return true;
         }
 
@@ -123,7 +65,7 @@ function Board() {
         for (let row = 3; row < this.m; row++) {
             let streak = 0, col = 0, i = row;
             while (i >= 0) {
-                streak = this.board[i][col].color == prev_player ? ++streak : 0;
+                streak = this.board[i][col] == prev_player ? ++streak : 0;
                 if (streak == 4) return true;
                 i--;
                 col++;
@@ -134,7 +76,7 @@ function Board() {
         for (let col = 0; col < this.n; col++) {
             let streak = 0, row = this.m-1, j = col;
             while (j < this.n && row >= 0) {
-                streak = this.board[row][j].color == prev_player ? ++streak : 0;
+                streak = this.board[row][j] == prev_player ? ++streak : 0;
                 if (streak == 4) return true;
                 j++;
                 row--;
@@ -145,7 +87,7 @@ function Board() {
         for (let row = 3; row < this.m; row++) {
             let streak = 0, col = this.n-1, i = row;
             while (i >= 0) {
-                streak = this.board[i][col].color == prev_player ? ++streak : 0;
+                streak = this.board[i][col] == prev_player ? ++streak : 0;
                 if (streak == 4) return true;
                 i--;
                 col--;
@@ -156,7 +98,7 @@ function Board() {
         for (let col = this.n-1; col >= 0; col--) {
             let streak = 0, row = this.m-1, j = col;
             while (j >= 0 && row >= 0) {
-                streak = this.board[row][j].color == prev_player ? ++streak : 0;
+                streak = this.board[row][j] == prev_player ? ++streak : 0;
                 if (streak == 4) return true;
                 j--;
                 row--;
@@ -171,16 +113,14 @@ function Board() {
         // We only check the topmost row since tie games will only occur when
         // pieces start getting to the top
         for (let i = 0; i < this.n; i++) {
-            if (this.board[0][i].color == "#FFFFFF") return false;
+            if (this.board[0][i] == "#FFFFFF") return false;
         }
         return true;
     }
 
-    // Resets the board to initial state. Used when restarting game
-    this.reset_board = function() {     
-        this.init_board();
-        document.getElementById("end-screen").style.display = "none";
-        document.getElementById("blur").style.display = "none";
+    // Get the value (color) of board at i,j
+    this.get = function(i, j) {
+        return this.board[i][j];
     }
 }
 
@@ -262,123 +202,120 @@ function Board() {
 //     }
 // }
 
-function ViewHandler() {
-    this.rectangles = [];
+function ViewHandler(board) {
+    this.hit_boxes = [];
+    this.board = board;
+    this.canvas = document.getElementById('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.dpi = window.devicePixelRatio;
+
     this.init = function() {
-        let ctx = document.getElementById('canvas').getContext('2d');
-        let r = canvas.width / (60 * window.devicePixelRatio);
+        document.getElementById("game").style.display = "block";
+        document.getElementById("menu").style.display = "none";
+    
+        this.canvas.width = window.innerWidth * this.dpi;
+        this.canvas.height = window.innerHeight * this.dpi;
+        this.canvas.style.width = "" + (window.innerWidth) + "px";
+        this.canvas.style.height = "" + (window.innerHeight) + "px";
+        this.ctx.scale(this.dpi,this.dpi);
+
+        let r = this.canvas.width / (60 * window.devicePixelRatio);
         let x = 560-r, y = 110-r, w = 2*r, h = 12*r + 50;
         for (let i = 0; i < 7; i++) {
-            ctx.beginPath();
             let x_i = x + i * (w + 9);
-            ctx.rect(x_i, y, w, h);
-            ctx.fillStyle = "#FF0000";
-            ctx.stroke();
-            this.rectangles.push([x_i, y, w, h]);
+            this.ctx.beginPath();
+            this.ctx.rect(x_i, y, w, h);
+            this.ctx.fillStyle = "#FF0000";
+            this.ctx.stroke();
+            this.hit_boxes.push([x_i, y, w, h]);
         }
-        console.log(this.rectangles);
+
+        this.canvas.addEventListener('click', e => {
+            if (this.check_click(e.clientX, e.clientY)) this.draw();
+        });
+        
+        // Hide post game screen
+        this.canvas.addEventListener('keydown', (e) => {
+            if (e.keyCode == 72) {
+                document.getElementById("end-screen").style.display = "none";
+            }
+        })
     }
 
     this.check_click = function(user_x, user_y) {
-        let i = 0;
-        this.rectangles.forEach(rectangle => {
+        for (let i = 0; i < 7; i++) {
+            let rectangle = this.hit_boxes[i];
             let x = rectangle[0], y = rectangle[1], w = rectangle[2], h = rectangle[3];
             if ((x+w) >= user_x && user_x >= x && (y+h) >= user_y && user_y >= y) {
-                console.log('hit rectangle:', i);
+                board.place(i);
+                return true;
             }
-            i++;
+        }
+        return false;
+    }
+
+    this.draw = function() {
+        for (let i = 1; i <= 6; i++) {
+            for (let j = 1; j <= 7; j++) {
+                this.ctx.beginPath();
+                this.ctx.fillStyle = this.board.get(i-1, j-1);
+                this.ctx.lineWidth = 2;
+                this.ctx.arc((j * 60) + 500, (i * 60) + 50, canvas.width / (60 * window.devicePixelRatio), 0, 2 * Math.PI);
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+        }
+    }
+
+    this.draw_finish_screen = function(win) {
+        // Display the end screen and blur the background
+        document.getElementById("end-screen").style.display = "block";
+        document.getElementById("blur").style.display = "block";
+        
+        // Set onclick event of restart button to resetting the board
+        // TODO: Possibly find a fix for this.
+        let restart_button = document.getElementById("restart");
+        restart_button.addEventListener('click', e => {
+            console.log("reset");
+            this.board.init_board();
+            document.getElementById("end-screen").style.display = "none";
+            document.getElementById("blur").style.display = "none";    
         })
+
+        // Display at the top who won or if it was a tie
+        let winner_text = document.getElementById("winner-1");
+        if (win) {
+            winner_text.textContent =  this.board.player_turn == 1 ? "Blue" : "Yellow";
+            winner_text.style.color = this.board.player_turn == 1 ? "blue" : "gold";
+        } else {
+            winner_text.textContent = "Tie"
+            document.getElementById("winner-2").style.display = "none";
+        }
     }
 }
 
-function start_game(game_mode) {
-    let canvas = document.getElementById('canvas');
-    /** @type {CanvasRenderingContext2D} */
-    let ctx = canvas.getContext('2d');
-    let dpi = window.devicePixelRatio;
-
-    document.getElementById("game").style.display = "block";
-    document.getElementById("menu").style.display = "none";
-
-    canvas.width = window.innerWidth * dpi;
-    canvas.height = window.innerHeight * dpi;
-    canvas.style.width = "" + (window.innerWidth) + "px";
-    canvas.style.height = "" + (window.innerHeight) + "px";
-    ctx.scale(dpi,dpi);
-    
+function start_game(game_mode) {    
     let board = new Board();
-    // let ai = new AI(1);
-    let view = new ViewHandler();
+    let view = new ViewHandler(board);
     board.init_board();
-    // if (game_mode == 1) ai = new AI(1);
     view.init();
-
     setInterval(loop, 100);
 
     function loop() {
         // If there is a winner, do not update the board
         if (board.finished) return;
         
-        // ai.static_board_eval(board);
-        // if (game_mode == 1 && board.player_turn == ai.player) {
-        //     let ai_col = ai.minimax(board, -1)[1];
-        //     console.log(ai_col);
-        //     board.update_board(ai_col);
-        // }
-
         // Draw the circles to the screen
-        board.draw();
+        view.draw();
         // If there is a winner or tie game, draw the final board to the screen
         // and show the results screen
         let win = board.check_win();
         let tie = board.check_tie();
         if (win || tie) {
             board.finished = true;
-            board.draw();
-            
-            // Display the end screen and blur the background
-            document.getElementById("end-screen").style.display = "block";
-            document.getElementById("blur").style.display = "block";
-            
-            // Set onclick event of restart button to resetting the board
-            // TODO: Possibly find a fix for this.
-            let restart_button = document.getElementById("restart");
-            restart_button.onclick = function() {
-                board.reset_board();
-            }
-
-            // Display at the top who won or if it was a tie
-            let winner_text = document.getElementById("winner-1");
-            if (win) {
-                winner_text.textContent =  board.player_turn == 1 ? "Blue" : "Yellow";
-                winner_text.style.color = board.player_turn == 1 ? "blue" : "gold";
-            } else {
-                winner_text.textContent = "Tie"
-                document.getElementById("winner-2").style.display = "none";
-            }
-            
+            view.draw();  
+            view.draw_finish_screen(win);                      
         } 
     }
-
-    // event handler on canvas to check for clicks on page
-    canvas.addEventListener('click', (e) => {
-        // Place a piece on the board if it is valid
-        board.place(e.clientX, e.clientY);
-        view.check_click(e.clientX, e.clientY);
-    })
-
-    // Manual reset for debugging *REMOVE*
-    canvas.addEventListener('keydown', (e) => {
-        if (e.keyCode == 82) {
-            board.reset_board();
-        }
-    })
-
-    // Hide post game screen
-    canvas.addEventListener('keydown', (e) => {
-        if (e.keyCode == 72) {
-            document.getElementById("end-screen").style.display = "none";
-        }
-    })
 }
 
