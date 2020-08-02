@@ -1,17 +1,19 @@
 body {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin: 0;
     overflow: hidden;
     padding: 0;
+    height: 100vh;
 }
 
 #end-screen {
     background-color: #f5edfa;
     position: absolute;
     display: none;
-    top: 147px;
-    left: 655px;
+    top: 30%;
+    left: 40%;
     width: 150px;
     height: 210px;
     padding: 10px 10px;
@@ -23,6 +25,7 @@ body {
 
 canvas {
     outline: none;
+    background-color: white;
 }
 
 ul {
@@ -90,16 +93,17 @@ li {
 
 #game {
     display: none;
+    justify-content: center;
+    align-items: center;
 }
 
 #menu {
     display: flex;
-    justify-content: center;
     align-items: center;
     flex-direction: column;
     margin-top: 100px;
     width: 250px;
-    height: auto;
+    height: 250px;
     background-color: #5D64EEFF;
     padding-bottom: 50px;
     border-radius: 10%;

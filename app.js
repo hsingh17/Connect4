@@ -210,22 +210,24 @@ function ViewHandler(board) {
     this.dpi = window.devicePixelRatio;
 
     this.init = function() {
-        document.getElementById("game").style.display = "block";
+        document.getElementById("game").style.display = "flex";
         document.getElementById("menu").style.display = "none";
     
         this.canvas.width = window.innerWidth * this.dpi;
         this.canvas.height = window.innerHeight * this.dpi;
-        this.canvas.style.width = "" + (window.innerWidth) + "px";
-        this.canvas.style.height = "" + (window.innerHeight) + "px";
-        this.ctx.scale(this.dpi,this.dpi);
+        this.canvas.style.width = "" + window.innerWidth + "px";
+        this.canvas.style.height = "" + window.innerHeight + "px";
+        this.ctx.scale(this.dpi, this.dpi);
 
-        let r = this.canvas.width / (60 * window.devicePixelRatio);
-        let x = 560-r, y = 110-r, w = 2*r, h = 12*r + 50;
+        console.log(this.canvas.width, this.canvas.height, this.canvas.style.width, this.canvas.style.height);
+        console.log(window.innerWidth, window.innerHeight);
+        
+        let x = 1, y = 1, w = window.innerWidth / 7, h = window.innerHeight;
         for (let i = 0; i < 7; i++) {
-            let x_i = x + i * (w + 9);
+            let x_i = x + i * w;
             this.ctx.beginPath();
             this.ctx.rect(x_i, y, w, h);
-            this.ctx.fillStyle = "#FF0000";
+            this.ctx.strokeStyle = "#000000";
             this.ctx.stroke();
             this.hit_boxes.push([x_i, y, w, h]);
         }
@@ -255,12 +257,13 @@ function ViewHandler(board) {
     }
 
     this.draw = function() {
-        for (let i = 1; i <= 6; i++) {
-            for (let j = 1; j <= 7; j++) {
+        let x = 1, y = 1, w = window.innerWidth / 7, h = window.innerHeight;
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < 7; j++) {
                 this.ctx.beginPath();
-                this.ctx.fillStyle = this.board.get(i-1, j-1);
+                this.ctx.fillStyle = this.board.get(i, j);
                 this.ctx.lineWidth = 2;
-                this.ctx.arc((j * 60) + 500, (i * 60) + 50, canvas.width / (60 * window.devicePixelRatio), 0, 2 * Math.PI);
+                this.ctx.arc(x + (2*j+1) * (w/2), y + (2*i+1) * (h / 12), h / (12 * this.dpi), 0, 2 * Math.PI);
                 this.ctx.fill();
                 this.ctx.stroke();
             }
@@ -270,7 +273,6 @@ function ViewHandler(board) {
     this.draw_finish_screen = function(win) {
         // Display the end screen and blur the background
         document.getElementById("end-screen").style.display = "block";
-        document.getElementById("blur").style.display = "block";
         
         // Set onclick event of restart button to resetting the board
         // TODO: Possibly find a fix for this.
@@ -279,7 +281,7 @@ function ViewHandler(board) {
             console.log("reset");
             this.board.init_board();
             document.getElementById("end-screen").style.display = "none";
-            document.getElementById("blur").style.display = "none";    
+            this.draw();
         })
 
         // Display at the top who won or if it was a tie
@@ -291,7 +293,7 @@ function ViewHandler(board) {
             winner_text.textContent = "Tie"
             document.getElementById("winner-2").style.display = "none";
         }
-    }
+   }
 }
 
 function start_game(game_mode) {    
@@ -299,14 +301,14 @@ function start_game(game_mode) {
     let view = new ViewHandler(board);
     board.init_board();
     view.init();
+    view.draw();
     setInterval(loop, 100);
 
     function loop() {
         // If there is a winner, do not update the board
         if (board.finished) return;
         
-        // Draw the circles to the screen
-        view.draw();
+	// Draw the circles to the screen
         // If there is a winner or tie game, draw the final board to the screen
         // and show the results screen
         let win = board.check_win();
