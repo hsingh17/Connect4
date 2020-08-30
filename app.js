@@ -10,8 +10,6 @@ function Game() {
         this.n = 7;
         this.player_turn = 0;
         this.board = [];
-        // this.last_row = -1;
-        // this.last_col = -1;
         this.finished = false;
 
         // Create the internal representation of the board using a 2D-array
@@ -27,23 +25,19 @@ function Game() {
         // Iterate over all the rows of the column until we reach the bottom OR
         // until we reach the furthest possible place the piece can go down in this column
         for (var i = 0; i < this.board.length; i++) {
-            if (this.board[i][col] != "@") break;
+            if (this.board[i][col] != '@') break;
         }
 
         if (i == 0) return false;
 
         // Update the color of the circle where the piece is being dropped
         if (i != 0) this.board[i-1][col] = !this.player_turn ? 'B' : 'Y';
-        // this.last_row = i-1;
-        // this.last_col = col;
         this.player_turn ^= 1;
         return true;
     }
 
     // Checks if the player whos current playing has won
-    this.gen_streaks = function(player) {
-        // This condition is for the beginning of the game, when no pieces are dropped
-        if (this.last_row == -1 || this.last_col == -1) return false;
+    this.check_streaks = function(player) {
         
         let streaks = new Map();
         for (let i = 1; i <= 4; i++) streaks.set(i, 0);
@@ -51,27 +45,30 @@ function Game() {
         // Horizontal streaks
         for (let i = 0; i < this.m; i++) {
             for (let j = 0, streak = 0; j < this.n; j++) {
-                let cur = this.board[i][j];
+                let cur = this.get(i, j);
                 streak = cur == player ? ++streak : streak;
-                if (streak && (cur == '@' || streak == 4 || (j == this.n-1 && this.board[i][j-streak-1] == '@'))) {
+                if (streak && 
+                    ((cur == '@' && this.get(i+1, j) != '@') || 
+                    streak == 4 || 
+                    (this.get(i, j-streak-1) == '@' && this.get(i+1, j-streak-1) != '@'))) {
                     // console.log(streak, i, cur, "Horizontal");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
                 
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
             }
         }
             
         // Vertical streaks
         for (let j = 0; j < this.n; j++) {
             for (let i = this.m-1, streak = 0; i >= 0; i--) {
-                let cur = this.board[i][j];
+                let cur = this.get(i, j);
                 streak = cur == player ? ++streak : streak;
                 if (streak && (cur == '@' || streak == 4)) {
                     // console.log(streak, j, "Vertical");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
             }
         }
 
@@ -79,14 +76,17 @@ function Game() {
         for (let row = 3; row < this.m; row++) {
             let streak = 0, col = 0, i = row;
             while (i >= 0) {
-                let cur = this.board[i][col];
+                let cur = this.get(i, col);
                 streak = cur == player ? ++streak : streak;
-                if (streak && (cur == '@' || streak == 4 || (col-streak-1 >= 0 && row+streak+1 < this.m && this.board[row+streak+1][col-streak-1] == '@'))) {
+                if (streak && 
+                    ((cur == '@' && this.get(i+1, col) != '@') || 
+                    streak == 4 || 
+                    (this.get(i+streak+1, col-streak-1) == '@' && this.get(i+streak+2, col-streak-1) != '@'))) {
                     // console.log(streak, row, "↗");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
                 i--;
                 col++;
             }
@@ -96,14 +96,17 @@ function Game() {
         for (let col = 1; col < this.n-3; col++) {
             let streak = 0, row = this.m-1, j = col;
             while (j < this.n && row >= 0) {
-                let cur = this.board[row][j];
+                let cur = this.get(row, j);
                 streak = cur  == player ? ++streak : streak;
-                if (streak && (cur == '@' || streak == 4 || (j-streak-1 >= 0 && row+streak-1 < this.m && this.board[row+streak-1][j-streak-1] == '@'))) {
+                if (streak && 
+                    ((cur == '@' && this.get(row+1, j) != '@') || 
+                    streak == 4 || 
+                    (this.get(row+streak-1, j-streak-1) == '@' && this.get(row+streak+2, j-streak-1) != '@'))   ) {
                     // console.log(streak, col, "↗");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
                 j++;
                 row--;
             }
@@ -113,14 +116,17 @@ function Game() {
         for (let row = 3; row < this.m-1; row++) {
             let streak = 0, col = this.n-1, i = row;
             while (i >= 0) {
-                let cur = this.board[i][col];
+                let cur = this.get(i, col);
                 streak = cur == player ? ++streak : streak;
-                if (streak && (cur == '@' || streak == 4 || (col+streak+1 < this.n && i+streak+1 < this.m && this.board[i+streak+1][col+streak+1] == '@'))) {
+                if (streak && 
+                    ((cur == '@' && this.get(i+1, col) != '@') || 
+                    streak == 4 || 
+                    (this.get(i+streak+1, col+streak+1) == '@' && this.get(i+streak+2, col+streak+1)))) {
                     // console.log(streak, row, "↖");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
                 i--;
                 col--;
             }
@@ -130,26 +136,28 @@ function Game() {
         for (let col = this.n-1; col >= 3; col--) {
             let streak = 0, row = this.m-1, j = col;
             while (j >= 0 && row >= 0) {
-                let cur = this.board[row][j];
+                let cur = this.get(row, j);
                 streak = cur == player ? ++streak : streak;
-                if (streak && (cur == '@' || streak == 4 ||(j+streak+1 < this.n && row+streak+1 < this.m && this.board[row+streak+1][j+streak+1] == '@'))) {
+                if (streak && 
+                    ((cur == '@' && this.get(row+1, j) != '@')|| 
+                    streak == 4 ||
+                    (this.get(row+streak+1, j+streak+1) == '@' && this.get(row+streak+2, j+streak+1) != '@'))) {
                     // console.log(streak, col, "↖");
                     streaks.set(streak, streaks.get(streak) + 1);
-                    streak = 0;
                 }
 
-                if (cur != player) streak = 0;
+                if (cur != player || streak == 4) streak = 0;
                 j--;
                 row--;
             }
         }
 
-        console.log(streaks, player == 'B' ? "Blue" : "Yellow");
+        // console.log(streaks, player == 'B' ? "Blue" : "Yellow");
         return streaks;
     }
 
     this.check_win = function() {
-        let streaks = this.gen_streaks(this.player_turn ^ 1 == 0 ? 'B' : 'Y');
+        let streaks = this.check_streaks(this.player_turn ^ 1 == 0 ? 'B' : 'Y');
         if (streaks.get(4) != 0) return true;
         return false;
     }
@@ -168,28 +176,30 @@ function Game() {
 
     // Get the value (color) of board at i,j
     this.get = function(i, j) {
-        if (i >= this.m || j >= this.n) return '-1';
+        if (i >= this.m || j >= this.n || i < 0 || j < 0) return '-1';
         return this.board[i][j];
     }
+
 }
 
 function AI(player) {
     this.LOOK_AHEAD = 2;
     this.player = player;
+
     // Function to simulate minimax algorithm. 
     // Takes in as arguments the current board, the current player, and K (the depth of search)
     // Return {board, col_played, heuristic_value_of_move}
-    this.minimax = function (board, k=this.LOOK_AHEAD) {
-        if (!k) return [board, col_last_played, this.static_board_eval(board)];
+    this.minimax = function (game, col_played, k=this.LOOK_AHEAD) {
+        if (!k) return [game, col_played, this.static_board_eval(game)];
 
-        let moves = this.move_gen(board);
+        let moves = this.move_gen(game);
         let best_move = null;
         let best_move_col = -1;
-        let best_move_h = (board.player_turn == player) ? Number.NEGATIVE_INFINITY : Number.POSITIVE_INFINITY;
+        let best_move_h = (game.player_turn == player) ? Number.MAX_VALUE * -1 : Number.MAX_VALUE;
         moves.forEach((move) => { 
             let ret = this.minimax(move[0], move[1], k-1);
-            if ((board.player_turn == this.player && Math.max(best_move_h, ret[2] == ret[2])) ||
-                (board.player_turn != this.player && Math.min(best_move_h, ret[2]) == ret[2])) {
+            if ((game.player_turn == this.player && Math.max(best_move_h, ret[2]) == ret[2]) ||
+                (game.player_turn != this.player && Math.min(best_move_h, ret[2]) == ret[2])) {
                 [best_move, best_move_col, best_move_h] = [move[0], move[1], ret[2]];
             } 
         })
@@ -197,23 +207,29 @@ function AI(player) {
     }
     
     // Function that returns the heuristic value of the argument board
-    this.static_board_eval = function(board) {       
-        let win = board.check_win();
-        let tie = board.check_tie();
-        let is_AI = this.player == board.player_turn;
+    this.static_board_eval = function(game) {       
+        let win = game.check_win();
+        let tie = game.check_tie();
+        let is_AI = this.player == game.player_turn;
         
-        if (win && !is_AI) return Math.NEGATIVE_INFINITY;
-        if (win && is_AI) return Math.POSITIVE_INFINITY;
+        if (win && !is_AI) return Number.MAX_VALUE * -1;
+        if (win && is_AI) return Number.MAX_VALUE;
         if (tie) return 0;
+        
+        let streaks_ai = game.check_streaks('Y');
+        let streaks_opp = game.check_streaks('B');
 
-        streaks(board, board.player_turn ^ 1);
+        let heuristic = 0;
+        for (let i = 1; i <= 3; i++) heuristic += (10 * i) * (streaks_ai.get(i) - streaks_opp.get(i));
+
+        return heuristic;
     }
 
     // Function that generates all moves that can be made from where board currently is
-    this.move_gen = function(board) {
+    this.move_gen = function(game) {
         moves = [];
-        for (let i = 0; i < board.n; i++) {
-            move = [_.clone(board), i];
+        for (let i = 0; i < game.n; i++) {
+            move = [_.cloneDeep(game), i];
             if (move[0].place(i)) moves.push(move);
         }
         return moves;
@@ -237,40 +253,53 @@ function ViewHandler(game) {
         this.canvas.style.height = "" + window.innerHeight + "px";
         this.ctx.scale(this.dpi, this.dpi);
         
+        // Initialize the hit boxes for the game.
+        // Makes it easy to see what column the player wants to drop their piece
         let x = 1, y = 1, w = window.innerWidth / 7, h = window.innerHeight;
         for (let i = 0; i < 7; i++) {
             let x_i = x + i * w;
-            this.ctx.beginPath();
-            this.ctx.rect(x_i, y, w, h);
-            this.ctx.strokeStyle = "#000000";
-            this.ctx.stroke();
             this.hit_boxes.push([x_i, y, w, h]);
         }
 
-        this.canvas.addEventListener('click', e => {
-            if (this.check_click(e.clientX, e.clientY)) this.draw();
+        // Mouse move event to allow for highlighting of the column the player
+        // is currently hovering over
+        this.canvas.addEventListener("mousemove", e => {
+            let col = this.check_mouse(e.clientX, e.clientY);
+            if (col >= 0) {
+                this.draw_hover(col);
+                this.draw();    
+            }
+        });
+
+        // Click event to drop the piece in the column the player has clicked on
+        this.canvas.addEventListener("click", e => {
+            let col = this.check_mouse(e.clientX, e.clientY);
+            if (col >= 0) {
+                game.place(col);
+                this.draw();
+            }
         });
         
-        // Hide post game screen
-        this.canvas.addEventListener('keydown', (e) => {
+        // Keydown event on 'H' to hide the post game screen
+        // TODO: REMOVE
+        this.canvas.addEventListener("keydown", (e) => {
             if (e.keyCode == 72) {
                 document.getElementById("end-screen").style.display = "none";
             }
         })
     }
 
-    this.check_click = function(user_x, user_y) {
+    // Function checks the player's mouse x and y to determine if it within a valid column
+    this.check_mouse = function(user_x, user_y) {
         for (let i = 0; i < 7; i++) {
             let rectangle = this.hit_boxes[i];
             let x = rectangle[0], y = rectangle[1], w = rectangle[2], h = rectangle[3];
-            if ((x+w) >= user_x && user_x >= x && (y+h) >= user_y && user_y >= y) {
-                game.place(i);
-                return true;
-            }
+            if ((x+w) >= user_x && user_x >= x && (y+h) >= user_y && user_y >= y) return i;
         }
-        return false;
+        return -1;
     }
 
+    // Draws the board to the screen
     this.draw = function() {
         let x = 1, y = 1, w = window.innerWidth / 7, h = window.innerHeight;
         for (let i = 0; i < 6; i++) {
@@ -289,13 +318,26 @@ function ViewHandler(game) {
             }
         }
     }
+    
+    // Highlights the column that the player is currently hovering over
+    this.draw_hover = function(col) {
+        for (let i = 0; i < 7; i++) {
+            let rect = this.hit_boxes[i];
+            let rect_x = rect[0], rect_y = rect[1], rect_w = rect[2], rect_h = rect[3];
+            this.ctx.beginPath();
+            this.ctx.rect(rect_x, rect_y, rect_w, rect_h);
+            if (i == col) this.ctx.fillStyle = "#CCCCCC";
+            else this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.fill();
+        }
+    }
 
+    // Draws the postgame screen
     this.draw_finish_screen = function(win) {
         // Display the end screen and blur the background
         document.getElementById("end-screen").style.display = "block";
         
         // Set onclick event of restart button to resetting the board
-        // TODO: Possibly find a fix for this.
         let restart_button = document.getElementById("restart");
         restart_button.addEventListener('click', e => {
             console.log("reset");
@@ -328,14 +370,13 @@ function start_game(game_mode) {
     game.init_game();
     view.init();
     view.draw();
+
     setInterval(loop, 100);
 
     function loop() {
         // If there is a winner, do not update the board
         if (game.finished) return;
-        
-        // ai.static_board_eval();
-	    // Draw the circles to the screen
+
         // If there is a winner or tie game, draw the final board to the screen
         // and show the results screen
         let win = game.check_win();
@@ -345,7 +386,15 @@ function start_game(game_mode) {
             view.draw();  
             view.draw_finish_screen(win);                      
         } 
+
+        // If the gamemode being played is vs AI and its the AI's turn
+        // then calculate the best move for the AI;
+        if (game_mode == 1 && game.player_turn == ai.player) {
+            let col = ai.minimax(game, -1)[1];
+            game.place(col);
+            view.draw();
+        } 
     }
-}65
+}
 
 
