@@ -183,7 +183,7 @@ function Game() {
 }
 
 function AI(player) {
-    this.LOOK_AHEAD = 2;
+    this.LOOK_AHEAD = 4;
     this.player = player;
 
     // Function to simulate minimax algorithm. 
@@ -196,13 +196,15 @@ function AI(player) {
         let best_move = null;
         let best_move_col = -1;
         let best_move_h = (game.player_turn == player) ? Number.MAX_VALUE * -1 : Number.MAX_VALUE;
+        
         moves.forEach((move) => { 
             let ret = this.minimax(move[0], move[1], k-1);
-            if ((game.player_turn == this.player && Math.max(best_move_h, ret[2]) == ret[2]) ||
-                (game.player_turn != this.player && Math.min(best_move_h, ret[2]) == ret[2])) {
+            if ((game.player_turn == this.player && Math.max(best_move_h, ret[2]) != best_move_h) ||
+                (game.player_turn != this.player && Math.min(best_move_h, ret[2]) != best_move_h)) {
                 [best_move, best_move_col, best_move_h] = [move[0], move[1], ret[2]];
             } 
         })
+
         return [best_move, best_move_col, best_move_h];
     }
     
@@ -212,21 +214,26 @@ function AI(player) {
         let tie = game.check_tie();
         let is_AI = this.player == game.player_turn;
         
-        if (win && !is_AI) return Number.MAX_VALUE * -1;
-        if (win && is_AI) return Number.MAX_VALUE;
+        // Since win checks the LAST PLAYER who played
+        // if win is true and the current player is the AI then that means
+        // the enemy has won in this game state. Otherwise, if win is true and the
+        // current player is the enemy then that means the AI has won in this game state.
+        if (win && !is_AI) return Number.MAX_VALUE;
+        if (win && is_AI) return Number.MAX_VALUE * -1;
         if (tie) return 0;
         
         let streaks_ai = game.check_streaks('Y');
         let streaks_opp = game.check_streaks('B');
 
         let heuristic = 0;
-        for (let i = 1; i <= 3; i++) heuristic += (10 * i) * (streaks_ai.get(i) - streaks_opp.get(i));
+        for (let i = 1; i <= 3; i++) heuristic += (Math.pow(3, i)) * (streaks_ai.get(i) - streaks_opp.get(i));
 
         return heuristic;
     }
 
     // Function that generates all moves that can be made from where board currently is
     this.move_gen = function(game) {
+        if (game.check_win()) return [];
         moves = [];
         for (let i = 0; i < game.n; i++) {
             move = [_.cloneDeep(game), i];
@@ -264,6 +271,7 @@ function ViewHandler(game) {
         // Mouse move event to allow for highlighting of the column the player
         // is currently hovering over
         this.canvas.addEventListener("mousemove", e => {
+            if (game.finished) return;
             let col = this.check_mouse(e.clientX, e.clientY);
             if (col >= 0) {
                 this.draw_hover(col);
@@ -273,6 +281,7 @@ function ViewHandler(game) {
 
         // Click event to drop the piece in the column the player has clicked on
         this.canvas.addEventListener("click", e => {
+            if (game.finished) return;
             let col = this.check_mouse(e.clientX, e.clientY);
             if (col >= 0) {
                 game.place(col);
@@ -390,8 +399,9 @@ function start_game(game_mode) {
         // If the gamemode being played is vs AI and its the AI's turn
         // then calculate the best move for the AI;
         if (game_mode == 1 && game.player_turn == ai.player) {
-            let col = ai.minimax(game, -1)[1];
-            game.place(col);
+            let ret = ai.minimax(game, -1);
+            console.log(ret[2]);
+            game.place(ret[1]);
             view.draw();
         } 
     }
