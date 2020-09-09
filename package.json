@@ -1,0 +1,24 @@
+{
+  "name": "connect4",
+  "version": "1.0.0",
+  "description": "Next Objectives:\r 1. Finish static board eval\r 2. Make AI faster at larger look aheads\r     a. Will probably require big changes to the Board & Circle class' representations\r 3. Multiplayer",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsingh17/Connect4.git"
+  },
+  "author": "Harjot Singh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hsingh17/Connect4/issues"
+  },
+  "homepage": "https://github.com/hsingh17/Connect4#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  }
+}
