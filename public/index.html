@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css" type="text/css">
     <link href="https://fonts.googleapis.com/css2?family=Teko:wght@600&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Kufam:wght@500&display=swap" rel="stylesheet"> 
     
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
@@ -20,19 +21,33 @@
     </div>
 
     <div id="game">
-      <!-- <div id="blur"></div> -->
       <canvas id="canvas" tabindex="1"></canvas>
-      <!-- <div id="blue-box"></div>
-      <div id="light-blue-box"></div> -->
       <div id="end-screen">
         <ul style="list-style:none">
           <li id="winner-1"></li>
           <li id="winner-2"></li>
-          <li><button id="restart"> Restart</button></li>
+          <li><button id="restart">Restart</button></li>
+          <li><button id="home">Back to Home</button></li>
         </ul>
       </div>
     </div>
- 
+
+    <div class="online" id="online-options" style="display: none"> 
+      <button id="create">Create Game</button>
+      <button id="join">Join Game</button>
+    </div>
+    
+    <div class="online" id="create-lobby" style="display: none">
+      <p>Your code is: </p>
+      <p>Waiting on other player...</p>
+    </div>
+    
+    <div class="online" id="join-lobby" style="display: none">
+      <p>Enter the lobby you want to join</p>
+      <input id="lobby-code" type="text">
+    </div>
+
+    <div id="disconnect">The opposing player has disconnected!</div>
     <script src="app.js"></script>
   </body>
 

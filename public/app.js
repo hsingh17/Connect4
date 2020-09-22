@@ -294,22 +294,40 @@ function ViewHandler(game) {
             if (this.game.finished) return;
             let col = this.check_mouse(e.clientX, e.clientY);
             if (col >= 0) {
-                if (this.socket != null) {
-                    this.socket.emit('place', col, this.game.player_turn);
+                if (this.socket) {
+                    this.socket.emit("place", col, this.game.player_turn);
                 } else {
                     this.game.place(col);
                     this.draw();
                 }
             }
         });
-        
-        // Keydown event on 'H' to hide the post game screen
-        // TODO: REMOVE
-        this.canvas.addEventListener("keydown", (e) => {
-            if (e.keyCode == 72) {
+
+        // Set onclick event for restart button to resetting the board
+        let restart_button = document.getElementById("restart");
+        restart_button.addEventListener("click", e => {
+            if (this.socket) {
+                if (!restart_button.textContent.endsWith("(1/2)")) {
+                    restart_button.textContent += "(1/2)";
+                    restart_button.disabled = true;                    
+                }
+                
+                this.socket.emit("poll_restart");
+            } else {
+                this.game.init_game();
                 document.getElementById("end-screen").style.display = "none";
+                this.draw();
             }
-        })
+        });
+
+        // Set onclick event for home button to go back to home screen
+        let home = document.getElementById("home");
+        home.addEventListener("click", e => {
+            document.getElementById("game").style.display = "none";
+            document.getElementById("menu").style.display = "flex";
+            document.getElementById("end-screen").style.display = "none";
+            if (this.socket) this.socket.disconnect();
+        });
     }
 
     // Function checks the player's mouse x and y to determine if it within a valid column
@@ -359,15 +377,6 @@ function ViewHandler(game) {
     this.draw_finish_screen = function(win) {
         // Display the end screen and blur the background
         document.getElementById("end-screen").style.display = "block";
-        
-        // Set onclick event of restart button to resetting the board
-        let restart_button = document.getElementById("restart");
-        restart_button.addEventListener('click', e => {
-            console.log("reset");
-            this.game.init_game();
-            document.getElementById("end-screen").style.display = "none";
-            this.draw();
-        })
 
         // Display at the top who won or if it was a tie
         let winner_text = document.getElementById("winner-1");
@@ -382,28 +391,90 @@ function ViewHandler(game) {
 
    this.init_socket = function() {
        this.socket = io.connect("http://localhost:5500");
-       this.socket.on('place', (col) => {
+
+       document.getElementById("game").style.display = "none";
+       document.getElementById("menu").style.display = "none";
+       document.getElementById("online-options").style.display = "flex";
+
+       document.getElementById("create").addEventListener("click", e => {
+           document.getElementById("online-options").style.display = "none";
+           
+           let create_lobby = document.getElementById("create-lobby");
+           create_lobby.style.display = "flex";
+           create_lobby.firstElementChild.textContent += this.socket.id;
+           this.socket.emit("create_room");
+        });
+
+       document.getElementById("join").addEventListener("click", e => {
+           document.getElementById("online-options").style.display = "none";
+           let join_lobby = document.getElementById("join-lobby");
+           join_lobby.style.display = "flex";
+
+           let lobby_code = document.getElementById("lobby-code");
+           lobby_code.addEventListener("keydown", e => {
+               if (e.code == "Enter") this.socket.emit("join_room", e.target.value);
+           });
+       });
+
+       this.socket.on("place", (col) => {
            this.game.place(col);
            this.draw();
+       });
+       
+       this.socket.on("ready", () => {
+           document.getElementById("create-lobby").style.display = "none";
+           document.getElementById("join-lobby").style.display = "none";
+           document.getElementById("game").style.display = "flex";
+        });
+
+       this.socket.on("confirm_restart", () => {
+           document.getElementById("restart").textContent += " (1/2)";
+       });
+
+       this.socket.on("restart", () => {
+        //    console.log("restart!", this.socket.id);
+           document.getElementById("restart").textContent = "Restart";
+           document.getElementById("restart").disabled = false;
+           this.game.init_game();
+           document.getElementById("end-screen").style.display = "none";
+           this.draw();
+       });
+
+       this.socket.on("leave", () => {
+           console.log("player leave");
+           // Display the main menu screen again
+           document.getElementById("game").style.display = "none";
+           document.getElementById("menu").style.display = "flex";
+           document.getElementById("end-screen").style.display = "none";
+           
+           // Disconnect button is made visible and the messages fades out
+           let disconnect_msg = document.getElementById("disconnect");
+           disconnect_msg.style.visibility = "visible";
+           
+           setTimeout(() => {
+               disconnect_msg.style.transition = "2s";
+               disconnect_msg.style.opacity = '0';
+               disconnect_msg.style.visibility = "hidden";    
+           }, 1000);
+
+           this.socket.disconnect();
        });
    }
 }
 
 function start_game(game_mode) {    
-    let game = new Game();
-    let view = new ViewHandler(game);
-    let ai = null, socket = null;
-    
-    if (!game_mode) view.init_socket();
-    else if (game_mode ==  1) ai = new AI(1);
-    
+    let ai = null;
+    if (game_mode == 1) ai = new AI(1);
 
+    let game = new Game();
+    let view = new ViewHandler(game, game_mode);
+    
     game.init_game();
     view.init();
-    view.draw();
-
+    view.draw();   
+    if (!game_mode) view.init_socket();
     setInterval(loop, 100);
-
+    
     function loop() {
         // If there is a winner, do not update the board
         if (game.finished) return;
@@ -422,7 +493,6 @@ function start_game(game_mode) {
         // then calculate the best move for the AI;
         if (game_mode == 1 && game.player_turn == ai.player) {
             let ret = ai.minimax(game, -1);
-            console.log(ret[2], ret[1]);
             game.place(ret[1]);
             view.draw();
         } 

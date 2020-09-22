@@ -3,7 +3,6 @@ const PORT = 5500;
 let express = require('express');
 let app = express();
 let socket = require('socket.io');
-let players = 0;
 
 let server = app.listen(PORT, () => {
     console.log("Server is running at http://localhost:", PORT);
@@ -11,16 +10,53 @@ let server = app.listen(PORT, () => {
 
 let io = socket(server);
 
-io.sockets.on('connection', (socket) => {
+io.sockets.on("connection", (socket) => {
     console.log("New connection: ", socket.id);
-    socket.player_turn = players++;
-    socket.on('place', (col, player_turn) => {
-        console.log(col, player_turn, socket.player_turn);
+    
+    socket.on("create_room", () => {
+        socket.join(socket.id);
+        socket.player_turn = 0;
+        io.sockets.adapter.rooms[socket.id].restart = 0;
+    });
+
+    socket.on("join_room", room_code => {
+        socket.leave(socket.id);
+        socket.join(room_code);
+        io.to(room_code).emit("ready");
+        socket.player_turn = 1;
+    })
+    
+    socket.on("place", (col, player_turn) => {
         if (socket.player_turn == player_turn) {
-            io.sockets.emit('place', col);
+            let room = Object.keys(socket.rooms)[0];
+            io.to(room).emit("place", col);
         }
     });
 
+    socket.on("poll_restart", () => {
+        let room = Object.keys(socket.rooms)[0];
+        let room_obj = io.sockets.adapter.rooms[room];
+        room_obj.restart++;
+
+        if (room_obj.restart == 2) {
+            room_obj.restart = 0;
+            io.to(room).emit("restart");
+        } 
+        else {
+            socket.to(room).emit("confirm_restart");
+        }
+    });
+
+    socket.on("disconnecting", () => {
+        let room = Object.keys(socket.rooms)[0];
+        console.log(room);
+        io.to(room).emit("leave");
+    });
+
+    socket.on("disconnect", () => {
+        console.log("Disconnect:", socket.id);
+        console.log("Rooms :", io.sockets.adapter.rooms);
+    });
 });
 
-app.use(express.static('public'));
+app.use(express.static("public"));
