@@ -39,15 +39,17 @@
     
     <div class="online" id="create-lobby" style="display: none">
       <p>Your code is: </p>
+      <p id="lobby-code"></p>
       <p>Waiting on other player...</p>
+      <button id="copy-code">Copy lobby code</button>
     </div>
     
     <div class="online" id="join-lobby" style="display: none">
       <p>Enter the lobby you want to join</p>
-      <input id="lobby-code" type="text">
+      <input id="input-code" type="text">
     </div>
 
-    <div id="disconnect">The opposing player has disconnected!</div>
+    <div id="error"></div>
     <script src="app.js"></script>
   </body>
 

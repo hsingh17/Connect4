@@ -388,33 +388,74 @@ function ViewHandler(game) {
             document.getElementById("winner-2").style.display = "none";
         }
    }
+   
+   // Display online options screen
+   this.display_online = function() {
+       document.getElementById("game").style.display = "none";
+       document.getElementById("menu").style.display = "none";
+       let online_options = document.getElementById("online-options");
+       online_options.style.display = "flex";
+       
+       document.getElementById("create").addEventListener("click", e => {
+           online_options.style.display = "none";   
+           let create_lobby = document.getElementById("create-lobby");
+           create_lobby.style.display = "flex"; 
+
+           let lobby_code = document.getElementById("lobby-code");
+           lobby_code.textContent = this.socket.id;
+           lobby_code.style.color = "#FFFFFF";
+           lobby_code.style.fontSize = "30px";
+           lobby_code.style.fontFamily = "Teko, sans-serif";
+
+           let copy_code = document.getElementById("copy-code");
+           copy_code.addEventListener("click", e => {
+               let temp_input = document.createElement("input");
+               temp_input.value = lobby_code.textContent;
+               document.body.appendChild(temp_input);
+               temp_input.select();
+               document.execCommand("copy");
+               document.body.removeChild(temp_input);
+           });
+
+           this.socket.emit("create_room");
+        });
+
+        document.getElementById("join").addEventListener("click", e => {            
+            online_options.style.display = "none";
+
+            let join_lobby = document.getElementById("join-lobby");
+            join_lobby.style.display = "flex";
+
+            let input_code = document.getElementById("input-code");
+            input_code.addEventListener("keydown", e => {
+                if (e.code == "Enter") this.socket.emit("join_room", e.target.value);
+            });
+        });
+   }
+
+   this.display_error = function(error_type, error_msg) {   
+       // Display the main menu screen again if error type is 0 aka disconnect
+       if (!error_type) {
+           document.getElementById("game").style.display = "none";
+           document.getElementById("menu").style.display = "flex";
+           document.getElementById("end-screen").style.display = "none";
+       }
+       
+       // Disconnect button is made visible and the messages fades out
+       let error_div = document.getElementById("error");
+       error_div.textContent = error_msg;
+       error_div.style.visibility = "visible";
+       
+       setTimeout(() => {
+           error_div.style.transition = "1s";
+           error_div.style.visibility = "hidden";    
+       }, 1000);
+   }
 
    this.init_socket = function() {
        this.socket = io.connect("http://localhost:5500");
 
-       document.getElementById("game").style.display = "none";
-       document.getElementById("menu").style.display = "none";
-       document.getElementById("online-options").style.display = "flex";
-
-       document.getElementById("create").addEventListener("click", e => {
-           document.getElementById("online-options").style.display = "none";
-           
-           let create_lobby = document.getElementById("create-lobby");
-           create_lobby.style.display = "flex";
-           create_lobby.firstElementChild.textContent += this.socket.id;
-           this.socket.emit("create_room");
-        });
-
-       document.getElementById("join").addEventListener("click", e => {
-           document.getElementById("online-options").style.display = "none";
-           let join_lobby = document.getElementById("join-lobby");
-           join_lobby.style.display = "flex";
-
-           let lobby_code = document.getElementById("lobby-code");
-           lobby_code.addEventListener("keydown", e => {
-               if (e.code == "Enter") this.socket.emit("join_room", e.target.value);
-           });
-       });
+       this.display_online();
 
        this.socket.on("place", (col) => {
            this.game.place(col);
@@ -432,7 +473,6 @@ function ViewHandler(game) {
        });
 
        this.socket.on("restart", () => {
-        //    console.log("restart!", this.socket.id);
            document.getElementById("restart").textContent = "Restart";
            document.getElementById("restart").disabled = false;
            this.game.init_game();
@@ -441,23 +481,12 @@ function ViewHandler(game) {
        });
 
        this.socket.on("leave", () => {
-           console.log("player leave");
-           // Display the main menu screen again
-           document.getElementById("game").style.display = "none";
-           document.getElementById("menu").style.display = "flex";
-           document.getElementById("end-screen").style.display = "none";
-           
-           // Disconnect button is made visible and the messages fades out
-           let disconnect_msg = document.getElementById("disconnect");
-           disconnect_msg.style.visibility = "visible";
-           
-           setTimeout(() => {
-               disconnect_msg.style.transition = "2s";
-               disconnect_msg.style.opacity = '0';
-               disconnect_msg.style.visibility = "hidden";    
-           }, 1000);
-
+           this.display_error(0, "The opposing player has disconnected!");
            this.socket.disconnect();
+       });
+
+       this.socket.on("incorrect_room", room_code => {
+           this.display_error(1, room_code + " is not a valid room code!");
        });
    }
 }

@@ -10,20 +10,30 @@ let server = app.listen(PORT, () => {
 
 let io = socket(server);
 
-io.sockets.on("connection", (socket) => {
+io.sockets.on("connection", socket => {
     console.log("New connection: ", socket.id);
     
     socket.on("create_room", () => {
         socket.join(socket.id);
         socket.player_turn = 0;
-        io.sockets.adapter.rooms[socket.id].restart = 0;
+        
+        let rooms = io.sockets.adapter.rooms;
+        rooms[socket.id].restart = 0;
     });
 
     socket.on("join_room", room_code => {
-        socket.leave(socket.id);
-        socket.join(room_code);
-        io.to(room_code).emit("ready");
-        socket.player_turn = 1;
+        let rooms = io.sockets.adapter.rooms;
+
+        // If the room code the user has entered is not in the valid list of rooms
+        // then display an error message. Otherwise join room and start game
+        if (!rooms[room_code]) {
+            socket.emit("incorrect_room", room_code);
+        } else {
+            socket.leave(socket.id);
+            socket.join(room_code);
+            io.to(room_code).emit("ready");
+            socket.player_turn = 1;
+        }
     })
     
     socket.on("place", (col, player_turn) => {
@@ -41,15 +51,13 @@ io.sockets.on("connection", (socket) => {
         if (room_obj.restart == 2) {
             room_obj.restart = 0;
             io.to(room).emit("restart");
-        } 
-        else {
+        } else {
             socket.to(room).emit("confirm_restart");
         }
     });
 
     socket.on("disconnecting", () => {
         let room = Object.keys(socket.rooms)[0];
-        console.log(room);
         io.to(room).emit("leave");
     });
 
