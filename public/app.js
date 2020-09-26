@@ -51,7 +51,6 @@ function Game() {
                     ((cur == '@' && this.get(i+1, j) != '@') || 
                     streak == 4 || 
                     (this.get(i, j-streak-1) == '@' && this.get(i+1, j-streak-1) != '@'))) {
-                    // console.log(streak, i, cur, "Horizontal");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
                 
@@ -65,7 +64,6 @@ function Game() {
                 let cur = this.get(i, j);
                 streak = cur == player ? ++streak : streak;
                 if (streak && (cur == '@' || streak == 4)) {
-                    // console.log(streak, j, "Vertical");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
                 if (cur != player || streak == 4) streak = 0;
@@ -82,7 +80,6 @@ function Game() {
                     ((cur == '@' && this.get(i+1, col) != '@') || 
                     streak == 4 || 
                     (this.get(i+streak+1, col-streak-1) == '@' && this.get(i+streak+2, col-streak-1) != '@'))) {
-                    // console.log(streak, row, "↗");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
@@ -102,7 +99,6 @@ function Game() {
                     ((cur == '@' && this.get(row+1, j) != '@') || 
                     streak == 4 || 
                     (this.get(row+streak-1, j-streak-1) == '@' && this.get(row+streak+2, j-streak-1) != '@'))   ) {
-                    // console.log(streak, col, "↗");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
@@ -122,7 +118,6 @@ function Game() {
                     ((cur == '@' && this.get(i+1, col) != '@') || 
                     streak == 4 || 
                     (this.get(i+streak+1, col+streak+1) == '@' && this.get(i+streak+2, col+streak+1)))) {
-                    // console.log(streak, row, "↖");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
@@ -142,7 +137,6 @@ function Game() {
                     ((cur == '@' && this.get(row+1, j) != '@')|| 
                     streak == 4 ||
                     (this.get(row+streak+1, j+streak+1) == '@' && this.get(row+streak+2, j+streak+1) != '@'))) {
-                    // console.log(streak, col, "↖");
                     streaks.set(streak, streaks.get(streak) + 1);
                 }
 
@@ -152,7 +146,6 @@ function Game() {
             }
         }
 
-        // console.log(streaks, player == 'B' ? "Blue" : "Yellow");
         return streaks;
     }
 
