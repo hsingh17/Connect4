@@ -28,10 +28,10 @@ function Game() {
             if (this.board[i][col] != '@') break;
         }
 
-        if (i == 0) return false;
+        if (!i) return false;
 
         // Update the color of the circle where the piece is being dropped
-        if (i != 0) this.board[i-1][col] = !this.player_turn ? 'B' : 'Y';
+        if (i) this.board[i-1][col] = !this.player_turn ? 'B' : 'Y';
         this.player_turn ^= 1;
         return true;
     }
