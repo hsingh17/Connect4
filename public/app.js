@@ -446,7 +446,7 @@ function ViewHandler(game) {
    }
 
    this.init_socket = function() {
-       this.socket = io.connect("http://localhost:5500");
+       this.socket = io.connect("https://hsingh17-connect4.herokuapp.com/");
 
        this.display_online();
 
