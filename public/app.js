@@ -316,10 +316,8 @@ function ViewHandler(game) {
         // Set onclick event for home button to go back to home screen
         let home = document.getElementById("home");
         home.addEventListener("click", e => {
-            document.getElementById("game").style.display = "none";
-            document.getElementById("menu").style.display = "flex";
-            document.getElementById("end-screen").style.display = "none";
             if (this.socket) this.socket.disconnect();
+            window.location.reload();
         });
     }
 
@@ -427,13 +425,6 @@ function ViewHandler(game) {
    }
 
    this.display_error = function(error_type, error_msg) {   
-       // Display the main menu screen again if error type is 0 aka disconnect
-       if (!error_type) {
-           document.getElementById("game").style.display = "none";
-           document.getElementById("menu").style.display = "flex";
-           document.getElementById("end-screen").style.display = "none";
-       }
-       
        // Disconnect button is made visible and the messages fades out
        let error_div = document.getElementById("error");
        error_div.textContent = error_msg;
@@ -442,11 +433,14 @@ function ViewHandler(game) {
        setTimeout(() => {
            error_div.style.transition = "1s";
            error_div.style.visibility = "hidden";    
-       }, 1000);
+
+           // If error is 0 aka a disconnect then reload the page.
+           if (!error_type) window.location.reload();
+       }, 2000);
    }
 
    this.init_socket = function() {
-       this.socket = io.connect("https://hsingh17-connect4.herokuapp.com/");
+       this.socket = io.connect("http://localhost:5500/");
 
        this.display_online();
 
@@ -474,8 +468,8 @@ function ViewHandler(game) {
        });
 
        this.socket.on("leave", () => {
-           this.display_error(0, "The opposing player has disconnected!");
            this.socket.disconnect();
+           this.display_error(0, "The opposing player has disconnected!");
        });
 
        this.socket.on("incorrect_room", room_code => {
@@ -495,6 +489,7 @@ function start_game(game_mode) {
     view.init();
     view.draw();   
     if (!game_mode) view.init_socket();
+    console.log(view.socket);
     setInterval(loop, 100);
     
     function loop() {
