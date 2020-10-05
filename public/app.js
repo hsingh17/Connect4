@@ -432,8 +432,8 @@ function ViewHandler(game) {
        
        // If it is a disconnect, make the restart & home button unclickable
        if (!error_type) {
-           document.getElementById("restart").style.disabled = true;
-           document.getElementById("home").style.disabled = true;        
+           document.getElementById("restart").disabled = true;
+           document.getElementById("home").disabled = true;        
        }
 
        setTimeout(() => {
