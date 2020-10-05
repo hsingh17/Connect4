@@ -430,6 +430,12 @@ function ViewHandler(game) {
        error_div.textContent = error_msg;
        error_div.style.visibility = "visible";
        
+       // If it is a disconnect, make the restart & home button unclickable
+       if (!error_type) {
+           document.getElementById("restart").style.disabled = true;
+           document.getElementById("home").style.disabled = true;        
+       }
+
        setTimeout(() => {
            error_div.style.transition = "1s";
            error_div.style.visibility = "hidden";    
