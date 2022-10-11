@@ -1,6 +1,6 @@
 # Connect4
 
-Connect 4 recreation using HTML, CSS, Javascript/Node.JS, Express, and Socket.io. Hosted via [Heroku](https://hsingh17-connect4.herokuapp.com/)
+Connect 4 recreation using HTML, CSS, Javascript/Node.JS, Express, and Socket.io. Hosted via [Railway](https://connect4-production.up.railway.app/)
 
 # Features
 ## Local Multiplayer
